@@ -4,13 +4,17 @@ const mongoose = require("mongoose")
 const url = process.env.MONGODB_URI
 console.log(url)
 mongoose.connect(url).then(result => {
+
   console.log("Connected to MongoDB")
+  
 }).catch(error => {
+
   console.log("Could not connect to MongoDB")
+
 })
 
 const personSchema = new mongoose.Schema({
   name: String, 
-  number: String,
+  number: String, 
 })
 module.exports = mongoose.model('Person', personSchema)
