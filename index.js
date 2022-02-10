@@ -19,13 +19,14 @@ app.post('/api/persons/', (request,response,next) => {
     name:person.name,
     number:person.number
   })
-
-  personToSave.validate(person.number)
+  console.log(personToSave)
+  personToSave
+    .save()
     .then( savedPerson => savedPerson.toJSON())
     .then( savedAndFormattedPerson => response.json(savedAndFormattedPerson) )
     .catch(error => {
       next(error)
-    })
+  })
 })
 
 app.get('/api/persons', (request, response) => {
