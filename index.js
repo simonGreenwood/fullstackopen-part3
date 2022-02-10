@@ -11,18 +11,21 @@ app.use(cors())
 app.use(express.static('build'))
 app.use(express.json())
 
-app.post('/api/persons/', (request,response) => {
+app.post('/api/persons/', (request,response,next) => {
 
   const person = request.body
+  console.log(person)
   const personToSave = new Person({
     name:person.name,
     number:person.number
   })
 
-  personToSave.save(person)
-  .then( savedPerson => savedPerson.toJSON() )
-  .then( savedAndFormattedPerson => response.json(savedAndFormattedPerson) )
-  
+  personToSave.validate(person.number)
+    .then( savedPerson => savedPerson.toJSON())
+    .then( savedAndFormattedPerson => response.json(savedAndFormattedPerson) )
+    .catch(error => {
+      next(error)
+    })
 })
 
 app.get('/api/persons', (request, response) => {
@@ -50,6 +53,7 @@ app.get('/api/persons/:id', (request, response, next) => {
 
 app.delete('/api/persons/:id/',(request, response, next) => {
   Person.findByIdAndRemove(request.params.id).then(result => {
+    
     response.status(204).end()
   }).catch(error => {
     next(error)
@@ -69,6 +73,8 @@ app.put("/api/persons/:id",(request,response, next) => {
   Person
   .findByIdAndUpdate(request.params.id,person,{new:true})
   .then(result => {
+    
+    assert.equal(Person.findById(request.params.id).validateSync(),null).catch(error =>  next(error))
     response.status(200).end()
   })
   .catch(error => {
@@ -86,11 +92,10 @@ app.get('/info', (request, response) => {
 
 const errorHandler = (error, request, response, next) => {
   console.error(error.message)
-
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
   } else if (error.name === 'ValidationError') {
-    return response.status(400).send(error.message)
+    return response.status(400).send({error : error.message})
   }
   next(error)
 }
