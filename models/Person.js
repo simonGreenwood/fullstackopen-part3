@@ -9,15 +9,16 @@ mongoose.connect(url).then(result => {
   console.log("Could not connect to MongoDB")
 })
 const validator = (number) => {
+  console.log(number)
   const splitNumber = number.split("-") 
+  console.log(splitNumber)
+  console.log(splitNumber[0].length === 2 || splitNumber[0].length === 3)
   return (parseInt(splitNumber[0])!==NaN && (splitNumber[0].length === 2 || splitNumber[0].length === 3)  && parseInt(splitNumber[-1])!==NaN && splitNumber.length === 2)
 }
-const msg = (value) => `${value} is not a valid phone number!`
-
 const personSchema = new mongoose.Schema({
   name: String,
   number: {
-    type: String,
+    type: String, 
     validate: {
       validator: (number) => validator(number),
       message: number => `${JSON.stringify(number.value)} is not a valid phone number!`

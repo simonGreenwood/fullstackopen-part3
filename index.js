@@ -62,21 +62,12 @@ app.delete('/api/persons/:id/',(request, response, next) => {
 })
 
 app.put("/api/persons/:id",(request,response, next) => {
-
-  const name = request.body.name
-  const number = request.body.number
-
-  const person = {
-    name:request.body.name,
-    number:request.body.number
-  }
-  console.log(person)
   Person
-  .findByIdAndUpdate(request.params.id,person,{new:true})
+  .findByIdAndUpdate(request.params.id,request.body)
   .then(result => {
-    
-    assert.equal(Person.findById(request.params.id).validateSync(),null).catch(error =>  next(error))
-    response.status(200).end()
+    // console.log(result)
+    Person.findById(request.params.id)//.validateSync().catch(error =>  next(error))
+    response.status(200).json(result.toJSON()).end()
   })
   .catch(error => {
     next(error)
@@ -89,7 +80,7 @@ app.get('/info', (request, response) => {
     response.send(`<p>The phonebook has info for ${persons.length} people </p><p>${new Date()}</p>`)
   })
 })
-
+ 
 
 const errorHandler = (error, request, response, next) => {
   console.error(error.message)
