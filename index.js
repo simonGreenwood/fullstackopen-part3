@@ -19,11 +19,11 @@ app.post('/api/persons/', (request,response,next) => {
     name:person.name,
     number:person.number
   })
-  console.log(personToSave)
   personToSave
     .save()
-    .then( savedPerson => savedPerson.toJSON())
-    .then( savedAndFormattedPerson => response.json(savedAndFormattedPerson) )
+    .then( savedPerson => {
+      response.json(savedPerson.toJSON())
+    })
     .catch(error => {
       next(error)
   })
@@ -33,7 +33,7 @@ app.get('/api/persons', (request, response) => {
   Person
   .find({})
   .then(persons=> {
-    response.json(persons)
+    response.json(persons.map(person => person.toJSON()))
   })
 })
 
@@ -42,7 +42,7 @@ app.get('/api/persons/:id', (request, response, next) => {
   .then(person => {
     console.log(person)
     if (person) {
-      response.json(person)
+      response.json(person.toJSON())
     } else {
       response.status(404).end()
     }
@@ -62,12 +62,12 @@ app.delete('/api/persons/:id/',(request, response, next) => {
 })
 
 app.put("/api/persons/:id",(request,response, next) => {
+  const personToUpdate = Person.findById(request.params.id)
   Person
-  .findByIdAndUpdate(request.params.id,request.body)
-  .then(result => {
-    // console.log(result)
-    Person.findById(request.params.id)//.validateSync().catch(error =>  next(error))
-    response.status(200).json(result.toJSON()).end()
+  .findOneAndUpdate(personToUpdate,request.body,{runValidators:true,new:true})
+  .then(returnedPerson=>{
+    console.log(returnedPerson)
+    response.status(200).json(returnedPerson.toJSON()).end()
   })
   .catch(error => {
     next(error)
@@ -76,11 +76,10 @@ app.put("/api/persons/:id",(request,response, next) => {
 app.get('/info', (request, response) => {
   Person
   .find({})
-  .then(persons=> {
+    .then(persons=> {
     response.send(`<p>The phonebook has info for ${persons.length} people </p><p>${new Date()}</p>`)
   })
 })
- 
 
 const errorHandler = (error, request, response, next) => {
   console.error(error.message)
@@ -88,6 +87,8 @@ const errorHandler = (error, request, response, next) => {
     return response.status(400).send({ error: 'malformatted id' })
   } else if (error.name === 'ValidationError') {
     return response.status(400).send({error : error.message})
+  } else {
+    console.log(error.message)
   }
   next(error)
 }

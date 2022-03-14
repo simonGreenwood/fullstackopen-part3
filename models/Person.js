@@ -12,13 +12,21 @@ const validator = (number) => {
   console.log(number)
   const splitNumber = number.split("-") 
   console.log(splitNumber)
-  console.log(splitNumber[0].length === 2 || splitNumber[0].length === 3)
-  return (parseInt(splitNumber[0])!==NaN && (splitNumber[0].length === 2 || splitNumber[0].length === 3)  && parseInt(splitNumber[-1])!==NaN && splitNumber.length === 2)
+  const part1IsNumber = !isNaN(Number(splitNumber[0]))
+  const part1LengthPassed = (splitNumber[0].length === 2 || splitNumber[0].length === 3)
+  const part2Passed = !isNaN(Number(splitNumber[1]))
+  const lengthPassed = splitNumber.length === 2
+  return part1LengthPassed && part2Passed && lengthPassed && part1IsNumber
 }
 const personSchema = new mongoose.Schema({
-  name: String,
+  name: {
+    type: String,
+    minLength : 3,
+    unique: true
+  },
   number: {
     type: String, 
+    minLength:8,
     validate: {
       validator: (number) => validator(number),
       message: number => `${JSON.stringify(number.value)} is not a valid phone number!`
@@ -27,5 +35,12 @@ const personSchema = new mongoose.Schema({
   }
 });
 
+personSchema.set('toJSON', {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString()
+    delete returnedObject._id
+    delete returnedObject.__v
+  }
+})
 
 module.exports = mongoose.model('Person', personSchema)
