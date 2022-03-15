@@ -91,6 +91,8 @@ const errorHandler = (error, request, response, next) => {
     return response.status(400).send({error : error.message})
   } else if (error.name === 'TypeError') {
     return response.status(400).send({error:'user already removed'})
+  } else if (error.name === 'MongoServerError') {
+      return response.status(400).send({error:'User already exists!'})
   } else {
     console.log(error.message)
   }
