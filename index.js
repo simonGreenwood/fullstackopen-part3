@@ -54,9 +54,10 @@ app.get('/api/persons/:id', (request, response, next) => {
 
 app.delete('/api/persons/:id/',(request, response, next) => {
   Person.findByIdAndRemove(request.params.id).then(result => {
-    
+
     response.status(204).end()
   }).catch(error => {
+    console.log(error)
     next(error)
   })
 })
@@ -71,6 +72,7 @@ app.put("/api/persons/:id",(request,response, next) => {
   })
   .catch(error => {
     next(error)
+    return
   })
 })
 app.get('/info', (request, response) => {
@@ -87,6 +89,8 @@ const errorHandler = (error, request, response, next) => {
     return response.status(400).send({ error: 'malformatted id' })
   } else if (error.name === 'ValidationError') {
     return response.status(400).send({error : error.message})
+  } else if (error.name === 'TypeError') {
+    return response.status(400).send({error:'user already removed'})
   } else {
     console.log(error.message)
   }
